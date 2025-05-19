@@ -1,0 +1,10 @@
+<aspectj>
+    <weaver>
+        <include within="playground.*"/>
+        <include within="framework.aspects.*"/>
+    </weaver>
+    <aspects>
+        <aspect name="framework.aspects.LoggingAspect"/>
+        <aspect name="framework.aspects.RunAspect"/>
+    </aspects>
+</aspectj>
