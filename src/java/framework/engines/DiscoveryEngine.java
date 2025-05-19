@@ -7,6 +7,7 @@ import framework.annotations.components.Service;
 import framework.annotations.databases.Entity;
 
 import java.io.File;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,19 +27,20 @@ public class DiscoveryEngine {
     private static final String PACKAGE_LOCATION = "src/java/";
     private static final String PACKAGE_NAME = "playground";
 
-    private DiscoveryEngine() {
+    private DiscoveryEngine() throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
         classes = new ArrayList<>();
         entityClasses = new ArrayList<>();
         repositoryClasses = new ArrayList<>();
         serviceClasses = new ArrayList<>();
         controllerClasses = new ArrayList<>();
+        componentClasses = new ArrayList<>();
 
         initClasses();
-//        initDatabase();
-//        initDependency();
+        initDatabase();
+        initDependency();
     }
 
-    public static DiscoveryEngine getInstance() {
+    public static DiscoveryEngine getInstance() throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
         if (instance == null) {
             instance = new DiscoveryEngine();
         }
@@ -46,7 +48,7 @@ public class DiscoveryEngine {
     }
 
     private static void initClasses() {
-        File directory = new File(PACKAGE_LOCATION + PACKAGE_NAME ); //
+        File directory = new File(PACKAGE_LOCATION + PACKAGE_NAME );
 
         if (directory.exists()) {
             scanDirectory(directory, PACKAGE_NAME);
@@ -99,27 +101,26 @@ public class DiscoveryEngine {
     }
 
     private static void initDatabase(){
-        databaseEngine = DatabaseEngine.getInstance();
-        databaseEngine.createDatabase(entityClasses);
+        DatabaseEngine.getInstance().createDatabase(entityClasses);
     }
 
+    private static void initDependency() throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
+        DependencyEngine.getInstance().creteRepository(repositoryClasses);
+        DependencyEngine.getInstance().creteService(serviceClasses);
+        DependencyEngine.getInstance().creteController(controllerClasses);
+        DependencyEngine.getInstance().createComponents(componentClasses);
+    }
+
+    //OBRISATI
     public static List<Class<?>> getClasses() {
         return classes;
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
         DiscoveryEngine engine = DiscoveryEngine.getInstance();
         for (Class<?> cls : engine.getClasses()) {
             System.out.println(cls.getName());
         }
     }
 
-
-//
-//    private static void initDependency(){
-//        dependencyEngine = DependencyEngine.getInstance();
-//        dependencyEngine.creteRepository(repositoryClasses);
-//        dependencyEngine.creteService(serviceClasses);
-//        dependencyEngine.creteController(controllerClasses);
-//    }
 }
