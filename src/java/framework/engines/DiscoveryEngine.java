@@ -116,11 +116,10 @@ public class DiscoveryEngine {
         return classes;
     }
 
-    public static void main(String[] args) throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
+    public static void test() throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
         DiscoveryEngine engine = DiscoveryEngine.getInstance();
         for (Class<?> cls : engine.getClasses()) {
             System.out.println(cls.getName());
         }
     }
-
 }
