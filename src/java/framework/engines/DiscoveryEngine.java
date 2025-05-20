@@ -13,9 +13,8 @@ import java.util.List;
 
 public class DiscoveryEngine {
     private static volatile DiscoveryEngine instance = null;
-
-    protected static DatabaseEngine databaseEngine;
-    protected static DependencyEngine dependencyEngine;
+    private static final String PACKAGE_LOCATION = "src/java/";
+    private static final String PACKAGE_NAME = "playground";
 
     protected static List<Class<?>> classes;            //all classes in a project
     protected static List<Class<?>> entityClasses;      //classes annotated with @Entity
@@ -23,9 +22,6 @@ public class DiscoveryEngine {
     protected static List<Class<?>> serviceClasses;     //classes annotated with @Service
     protected static List<Class<?>> controllerClasses;  //classes annotated with @Controller
     protected static List<Class<?>> componentClasses;   //classes annotated with @Component
-
-    private static final String PACKAGE_LOCATION = "src/java/";
-    private static final String PACKAGE_NAME = "playground";
 
     private DiscoveryEngine() throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
         classes = new ArrayList<>();
@@ -102,24 +98,12 @@ public class DiscoveryEngine {
 
     private static void initDatabase(){
         DatabaseEngine.getInstance().createDatabase(entityClasses);
+        DatabaseEngine.getInstance().mapRepositoryToEntities(repositoryClasses);
     }
 
     private static void initDependency() throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
-        DependencyEngine.getInstance().creteRepository(repositoryClasses);
         DependencyEngine.getInstance().creteService(serviceClasses);
         DependencyEngine.getInstance().creteController(controllerClasses);
         DependencyEngine.getInstance().createComponents(componentClasses);
-    }
-
-    //OBRISATI
-    public static List<Class<?>> getClasses() {
-        return classes;
-    }
-
-    public static void test() throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
-        DiscoveryEngine engine = DiscoveryEngine.getInstance();
-        for (Class<?> cls : engine.getClasses()) {
-            System.out.println(cls.getName());
-        }
     }
 }

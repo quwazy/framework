@@ -1,5 +1,7 @@
 package framework.engines;
 
+import framework.exceptions.FrameworkException;
+
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
@@ -27,8 +29,13 @@ public class ServerEngine {
     }
 
     protected void insertMethod(String path, Method method, Object controller){
+        if (controllerMap.containsKey(path)) {
+            throw new FrameworkException("Path: " + path + " already exists.");
+        }
+
         controllerMap.put(path, controller);
         methodMap.put(path, method);
+        //TODO
         System.out.println("Inserted method: " + path);
     }
 }

@@ -1,0 +1,22 @@
+Radi sa klasama anotiranim sa @Entity i @Repository
+
+Inicijalizujemo sve klase sa @Entity anotacijom
+
+Proverimo da li svaka klasa anotirana sa @Entity ima @Id anotaciju iznad polja koje mora biti tipa Long
+
+U Mapu "database" stavljamo <ime klase @Entity, Lista objekata te klase> koja ce sluziti
+za cuvanje podataka o tim objektima
+
+Kad god dodajemo novi objekat u bazu, koristicemo staticko polje idCounter,
+koji ce nam sluziti kao jedinstveni identifikator za svaki objekat u bazi. Prilikom svake dodele,
+vrednost polja se inkrementira
+
+### RAD SA REPOSITORY INTERFEJSOM ###
+Posto svaka klasa u bazi ima svoj repozitorijum, u anotaciji Repository stavljamo sa kojom konkretno klasom
+taj interfejs komunicira
+
+Njih treba namapirati pomocu mape "repositoryToEntityMap" sa Stringovima
+<ime repoziorijuma, ime klase u bazi sa kojom komunicira>
+
+Kada god koristimo odredjeni repozitorijum, mi cemo znati u kom delu "database" mape da pogledamo,
+na osnovu imena repozitorijuma i imena klase

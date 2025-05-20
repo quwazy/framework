@@ -6,30 +6,21 @@ import framework.annotations.methodes.Delete;
 import framework.annotations.methodes.Get;
 import framework.annotations.methodes.Post;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Starts the application.
- * It will create instances of all
- * classes in the engine package.
- * Also, will scan all classes in
- * a project to look for ones
- * with annotations.
- */
 public class DependencyEngine {
     private static volatile DependencyEngine instance = null;
 
-    private static Map<String, Object> repositoryMap;
     private static Map<String, Object> serviceMap;
     private static Map<String, Object> controllerMap;
     private static Map<String, Object> componentMap;
 
     private DependencyEngine() {
-        repositoryMap = new HashMap<>();
         serviceMap = new HashMap<>();
         controllerMap = new HashMap<>();
         componentMap = new HashMap<>();
@@ -40,18 +31,6 @@ public class DependencyEngine {
             instance = new DependencyEngine();
         }
         return instance;
-    }
-
-    protected void creteRepository(List<Class<?>> classes) throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
-        for (Class<?> cls : classes) {
-            Object obj = cls.getDeclaredConstructor().newInstance();
-            repositoryMap.put(cls.getName(), obj);
-
-            Class<?> clazz = cls.getAnnotation(Repository.class).entity();     //Klasa koja radi sa ovim repozitorijumuom
-
-        }
-
-//        DatabaseEngine.getInstance().createClassRepositoryMap(repositoryMap);
     }
 
     protected void creteService(List<Class<?>> classes) throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {

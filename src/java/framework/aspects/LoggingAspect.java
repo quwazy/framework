@@ -8,7 +8,7 @@ import org.aspectj.lang.annotation.Pointcut;
 
 @Aspect
 public class LoggingAspect {
-    @Pointcut("execution(* playground.Calculator.*(..))")
+    @Pointcut("execution(* playground.old.Calculator.*(..))")
     public void calculatorMethods() {}
 
     @Before("calculatorMethods()")

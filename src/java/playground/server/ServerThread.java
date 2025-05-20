@@ -1,13 +1,14 @@
 package playground.server;
 
+import framework.exceptions.FrameworkException;
+
 import java.io.*;
 import java.net.Socket;
 
 public class ServerThread implements Runnable{
-    private final Socket socket;
+    private Socket socket;
     private BufferedReader in;
     private PrintWriter out;
-    private String firstLine;
 
     public ServerThread(Socket socket){
         this.socket = socket;
@@ -22,7 +23,7 @@ public class ServerThread implements Runnable{
                             new OutputStreamWriter(
                                     socket.getOutputStream())), true);
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new FrameworkException("Failed to create BufferedReader/PrintWriter");
         }
     }
 
