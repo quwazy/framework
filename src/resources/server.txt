@@ -1,0 +1,8 @@
+Cuva mapu rute i objekta na kom se nalazi
+
+Cuva mapu rute i metode koja treba da se pozove na osnovu putanje
+
+Kada isparsiramo prvu liniju HTTP request-a, videcemo tacno koja metoda (GET, POST, DELETE) i koja tacno putanja
+su potrebne da se pozovu
+
+U obe mape cemo na osnovu kljuca, pronaci i objekat i metodu, i izvrsiti je

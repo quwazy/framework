@@ -6,10 +6,6 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * Holds all methods mapped to paths
- * and their controllers.
- */
 public class ServerEngine {
     private static volatile ServerEngine instance = null;
 

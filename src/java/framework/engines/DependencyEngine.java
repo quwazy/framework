@@ -1,12 +1,10 @@
 package framework.engines;
 
 import framework.annotations.components.Controller;
-import framework.annotations.components.Repository;
 import framework.annotations.methodes.Delete;
 import framework.annotations.methodes.Get;
 import framework.annotations.methodes.Post;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
@@ -49,15 +47,15 @@ public class DependencyEngine {
 
             for (Method method : cls.getDeclaredMethods()){
                 if (method.isAnnotationPresent(Get.class)){
-                    ServerEngine.getInstance().insertMethod("GET "+ controllerPath + method.getAnnotation(Get.class).path(), method, obj);
+                    ServerEngine.getInstance().insertMethod("GET " + controllerPath + method.getAnnotation(Get.class).path(), method, obj);
                     break;
                 }
                 if (method.isAnnotationPresent(Post.class)){
-                    ServerEngine.getInstance().insertMethod("POST "+ controllerPath + method.getAnnotation(Post.class).path(), method, obj);
+                    ServerEngine.getInstance().insertMethod("POST " + controllerPath + method.getAnnotation(Post.class).path(), method, obj);
                     break;
                 }
                 if (method.isAnnotationPresent(Delete.class)){
-                    ServerEngine.getInstance().insertMethod("DELETE "+ controllerPath + method.getAnnotation(Delete.class).path(), method, obj);
+                    ServerEngine.getInstance().insertMethod("DELETE " + controllerPath + method.getAnnotation(Delete.class).path(), method, obj);
                     break;
                 }
             }
