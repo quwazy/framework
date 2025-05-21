@@ -6,5 +6,4 @@ import playground.entities.Employee;
 
 @Repository(entity = Employee.class)
 public interface EmployeeRepository extends FrameworkRepository<Employee> {
-
 }

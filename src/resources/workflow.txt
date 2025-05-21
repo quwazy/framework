@@ -1,0 +1,9 @@
+Na server stizu http zahtevi.
+Na osnovu putanje znacemo koju metodu kog kontrolera trebamo pozvati.
+Trebamo presresti metode klasa anotiranih sa @Repository kako bi znali sta treba da uradimo u bazi.
+Kada stigne request, mi procitamo putanju i na osnovu putanje samo invoke-ujemo metodu sa objekom tog kontrolera.
+Metoda ce u sebi pozivati neku funkciju repozitorijuma sa kojim rad, a mi cemo presresti taj poziv i odraditi posao
+sa bazom u pozadini.
+Ako radi POST, mi cemo uzeti pristigli objekta i spustiti ga u bazu.
+Ako radi GET, naci cemo objekat pomocu ID parametra i vratiti ga kao povratnu vrednost metode.
+Ako radi DELETE, treba samo da vratim potvrdu da li je objekat uspesno obrisan.
