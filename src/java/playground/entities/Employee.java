@@ -7,4 +7,6 @@ import framework.annotations.databases.Id;
 public class Employee {
     @Id
     private Long id;
+    private String name;
+    private String email;
 }

@@ -1,12 +1,15 @@
 package framework.server;
 
 import com.google.gson.Gson;
+import framework.engines.DatabaseEngine;
+import framework.engines.ServerEngine;
 import framework.exceptions.FrameworkException;
 import framework.server.http.Header;
 import framework.server.http.Method;
 import framework.server.http.Request;
 
 import java.io.*;
+import java.lang.reflect.InvocationTargetException;
 import java.net.Socket;
 import java.util.HashMap;
 import java.util.Map;
@@ -54,7 +57,7 @@ public class ServerThread implements Runnable {
         }
     }
 
-    private Request generateRequest() throws IOException {
+    private Request generateRequest() throws IOException, ClassNotFoundException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
         String line = in.readLine();
         if (line == null) {
             return null;
@@ -87,12 +90,14 @@ public class ServerThread implements Runnable {
             if (contentType != null && contentType.contains("application/json")) {
                 Gson gson = new Gson();
                 // Parse the JSON string into a HashMap
-                Map<String, Object> jsonMap = gson.fromJson(body, Map.class);
+                HashMap<String, Object> jsonMap = gson.fromJson(body, HashMap.class);
 
                 for (Map.Entry<String, Object> entry : jsonMap.entrySet()) {
                     parameters.put(entry.getKey(), entry.getValue().toString());
                     System.out.println("Found parameter: " + entry.getKey() + " = " + entry.getValue());
+
                 }
+                DatabaseEngine.getInstance().addEntity(parameters);
             } else {
                 // Handle other formats if needed
                 System.out.println("Unsupported content type: ");
