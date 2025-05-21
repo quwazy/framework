@@ -98,7 +98,7 @@ public class DiscoveryEngine {
 
     private static void initDatabase(){
         DatabaseEngine.getInstance().createDatabase(entityClasses);
-        DatabaseEngine.getInstance().mapRepositoryToEntities(repositoryClasses);
+        DatabaseEngine.getInstance().mapRepositoryToEntity(repositoryClasses);
     }
 
     private static void initDependency() throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
