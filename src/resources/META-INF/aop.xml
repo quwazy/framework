@@ -1,6 +1,6 @@
 <aspectj>
     <weaver>
-        <include within="playground.server.*"/>
+        <include within="framework.server.*"/>
         <include within="framework.aspects.*"/>
     </weaver>
     <aspects>

@@ -1,4 +1,4 @@
-package playground.server;
+package framework.server;
 
 import java.io.IOException;
 import java.net.ServerSocket;
