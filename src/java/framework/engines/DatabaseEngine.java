@@ -7,6 +7,7 @@ import framework.interfaces.FrameworkRepository;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -35,6 +36,7 @@ public class DatabaseEngine {
         for (Class<?> cls : classes) {
             boolean foundId = false;
 
+
             for (Field field : cls.getDeclaredFields()){
                 if (field.isAnnotationPresent(Id.class)) {
                     if (field.getType() != Long.class){
@@ -57,10 +59,72 @@ public class DatabaseEngine {
         for (Class<?> cls : classes) {
             if (FrameworkRepository.class.isAssignableFrom(cls) && cls.isAnnotationPresent(Repository.class)){
                 repositoryToEntityMap.put(cls.getName(), cls.getAnnotation(Repository.class).entity().getName());
+
+                //dodavanje set polja
             }else{
                 throw new FrameworkException("Class: " + cls.getName() + " does not implement FrameworkRepository interface or does not have @Repository annotation");
             }
         }
+    }
+
+    public void insertEntity(String repositoryName, Object newEntity) throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
+        String entityName = repositoryToEntityMap.get(repositoryName);
+        if (entityName == null){
+            throw new FrameworkException("Repository: " + repositoryName + " is not working with Entity you provided");
+        }
+
+        Class clazz = Class.forName(entityName);
+
+        //treba mu dodati ID
+
+        System.out.println("Called");
+    }
+
+    /**
+     * For given JSON return Object
+     */
+    protected Object createEntity(String className, HashMap<String, String> jsonMap) throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
+        Class<?> cls = Class.forName(className);
+        if (!checkPostParams(cls, jsonMap)){
+            throw new FrameworkException("JSON map does not match with given class: " + className);
+        }
+        if (!database.containsKey(cls)){
+            throw new FrameworkException("Class: " + className + " does not have @Entity annotation");
+        }
+
+        Object obj = cls.getDeclaredConstructor().newInstance();   //create a new object
+
+        for (Field field : cls.getDeclaredFields()) {
+            if (!field.isAnnotationPresent(Id.class)) {
+                field.setAccessible(true);
+                String value = jsonMap.get(field.getName());
+                if (value != null) {
+                    Object convertedValue = convertValue(field.getType(), value);
+                    field.set(obj, convertedValue);
+                }
+            }
+        }
+
+        return obj;
+    }
+
+    /**
+     * Da li se POST parametri poklapaju sa Entitetom u kontroller klasi
+     */
+    private boolean checkPostParams(Class<?> cls, HashMap<String, String> jsonMap) {
+        if (jsonMap.size() != cls.getDeclaredFields().length - 1) {
+            return false;
+        }
+        int counter = jsonMap.size();
+        for (Field field : cls.getDeclaredFields()) {
+            if (field.isAnnotationPresent(Id.class)) {
+                continue;
+            }
+            if (jsonMap.containsKey(field.getName())) {
+                counter--;
+            }
+        }
+        return counter == 0;
     }
 
     /**
@@ -77,7 +141,7 @@ public class DatabaseEngine {
      * fields and insert values into fields
      * @param jsonMap from http request
      */
-    public void addEntity(HashMap<String, String> jsonMap) throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
+    protected void addEntity(HashMap<String, String> jsonMap) throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
         String className = getEntityName(jsonMap);
 
         if (className == null){
@@ -100,7 +164,8 @@ public class DatabaseEngine {
                 }
             }
         }
-
+        //TODO
+        System.out.println(obj.toString());
         database.get(cls).add(obj);     // Save to a database
     }
 

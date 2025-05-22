@@ -11,7 +11,6 @@ public class EmployeeController {
 
     @Post(path = "/add")
     public void addEmployee(Employee employee){
-        System.out.println("Prvo ovo: " + employee.toString());
         employeeRepository.add(employee);
     }
 }

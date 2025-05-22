@@ -5,6 +5,7 @@ import framework.annotations.components.Controller;
 import framework.annotations.components.Repository;
 import framework.annotations.components.Service;
 import framework.annotations.databases.Entity;
+import framework.exceptions.FrameworkException;
 
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
@@ -49,7 +50,7 @@ public class DiscoveryEngine {
         if (directory.exists()) {
             scanDirectory(directory, PACKAGE_NAME);
         } else {
-            System.err.println("Package path not found: " + directory.getAbsolutePath());
+            throw new FrameworkException( "Package path not found: " + directory.getAbsolutePath());
         }
     }
 
@@ -70,7 +71,6 @@ public class DiscoveryEngine {
 
                     if (clazz.isAnnotationPresent(Entity.class)){
                         entityClasses.add(clazz);
-                        System.out.println( "Found entity: " + clazz.getName());
                         continue;
                     }
                     if (clazz.isAnnotationPresent(Repository.class)){
@@ -90,7 +90,7 @@ public class DiscoveryEngine {
                         continue;
                     }
                 } catch (ClassNotFoundException e) {
-                    System.err.println("Class not found: " + packageName + "." + className);
+                    throw new FrameworkException("Class not found: " + packageName + "." + className);
                 }
             }
         }

@@ -1,7 +1,11 @@
 package framework.engines;
 
 import framework.exceptions.FrameworkException;
+import framework.server.http.Request;
+import framework.server.http.Response;
+import framework.server.http.SuccessfulResponse;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
@@ -31,8 +35,23 @@ public class ServerEngine {
 
         controllerMap.put(path, controller);
         methodMap.put(path, method);
-        //TODO
-        System.out.println("Inserted method: " + path);
+    }
+
+    public Response makeResponse(Request request) throws InvocationTargetException, IllegalAccessException, ClassNotFoundException, NoSuchMethodException, InstantiationException {
+        if (request.getMethod() == framework.server.http.Method.POST){
+            Method method = methodMap.get(request.getPath());
+            method.setAccessible(true);
+
+            if (method.getParameterTypes().length ==1){
+                Object obj = DatabaseEngine.getInstance().createEntity(method.getParameterTypes()[0].getName(), request.getParameters());
+                method.invoke(controllerMap.get(request.getPath()), obj);
+            }else {
+                throw new FrameworkException("POST method must have only one parameter");
+            }
+
+        }
+
+        return new SuccessfulResponse();
     }
 
 }
