@@ -131,7 +131,7 @@ public class DatabaseEngine {
             throw new FrameworkException("Repository: " + repositoryName + " is not working with Entity you provided");
         }
 
-        Class<?> clazz =Class.forName(entityName);
+        Class<?> clazz = Class.forName(entityName);
         List<Object> objectList = database.get(clazz);
 
         for (Object obj : objectList) {
@@ -176,6 +176,31 @@ public class DatabaseEngine {
         }
 
         return obj;
+    }
+    /**
+     * Remove entity from the database's table
+     */
+    public void deleteEntity(String repositoryName, Long id) throws ClassNotFoundException, IllegalAccessException {
+        String entityName = repositoryToEntityMap.get(repositoryName);
+        if (entityName == null){
+            throw new FrameworkException("Repository: " + repositoryName + " is not working with Entity you provided");
+        }
+
+        Class<?> clazz = Class.forName(entityName);
+        List<Object> objectList = database.get(clazz);
+
+        for (Object obj : objectList) {
+            for (Field field : clazz.getDeclaredFields()) {
+                if (field.isAnnotationPresent(Id.class)) {
+                    field.setAccessible(true); // In case the field is private
+                    Object fieldValue = field.get(obj);
+
+                    if (fieldValue instanceof Long && ((Long) fieldValue).equals(id)) {
+                        database.get(clazz).remove(obj);
+                    }
+                }
+            }
+        }
     }
 
     /**

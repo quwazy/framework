@@ -64,8 +64,11 @@ public class RepositoryAspect {
 //        System.out.println("Update method called");
 //    }
 //
-//    @Around("call (void playground.*.*.delete(int )")
-//    public void repositoryDeleteCall(ProceedingJoinPoint joinPoint) {
-//        System.out.println("Delete method called");
-//    }
+    @Around("call (void playground.*.*.delete(Long))")
+    public void repositoryDeleteCall(ProceedingJoinPoint joinPoint) throws ClassNotFoundException, IllegalAccessException {
+        System.out.println("Delete method called");
+        if (joinPoint.getArgs().length == 1 && joinPoint.getArgs()[0] != null) {
+            DatabaseEngine.getInstance().deleteEntity(joinPoint.getSignature().getDeclaringTypeName(), (Long) joinPoint.getArgs()[0]);
+        }
+    }
 }

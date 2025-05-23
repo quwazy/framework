@@ -82,7 +82,21 @@ public class ServerEngine {
                     throw new FrameworkException("GET method don't have any parameters");
                 }
             }
+        }
+        if (request.getMethod() == framework.server.http.Method.DELETE){
+            Long id = Long.parseLong(request.getPath().split("\\?")[1].split("=")[1]);
+            String path = request.getPath().split("\\?")[0];
 
+            request.setPath(path);
+            Method method = methodMap.get(request.getPath());
+            if (method == null) {
+                throw new FrameworkException("DELETE method not found for path: " + request.getPath());
+            }
+            method.setAccessible(true);
+            if (method.getParameterTypes().length == 1) {
+                method.invoke(controllerMap.get(request.getPath()), id);
+                return new SuccessfulResponse();
+            }
         }
 
         return new SuccessfulResponse();

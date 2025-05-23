@@ -17,13 +17,13 @@ public class EmployeeController {
 
     @Post(path = "/add")
     public void addEmployee(Employee employee){
+        employee.setName(employee.getName().toUpperCase());
         employeeRepository.add(employee);
     }
 
     @Get(path = "/getAllEmployees")
     public Response getAllEmployees(){
         List<Employee> employeeList = employeeRepository.getAll();
-        System.out.println("Lista: " + employeeList.size());
         return new JsonResponse(employeeList);
     }
 
