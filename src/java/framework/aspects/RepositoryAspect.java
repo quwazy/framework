@@ -40,11 +40,17 @@ public class RepositoryAspect {
         }
     }
 
-//    @Around("call (void playground.*.*.get(int)")
-//    public void repositoryGetCall(ProceedingJoinPoint joinPoint) {
-//        System.out.println("Get method called");
-//    }
-//
+    @Pointcut("call (* playground.*.*.get(Long))")
+    public void repositoryMethodGetOne() {}
+
+    @Around("repositoryMethodGetOne()")
+    public Object repositoryGetCall(ProceedingJoinPoint joinPoint) throws ClassNotFoundException, IllegalAccessException {
+        if (joinPoint.getArgs().length == 1 && joinPoint.getArgs()[0] != null) {
+            return DatabaseEngine.getInstance().getEntityById(joinPoint.getSignature().getDeclaringTypeName(), (Long) joinPoint.getArgs()[0]);
+        }
+        return null;
+    }
+
     @Pointcut("call (* playground.*.*.getAll())")
     public void repositoryMethodGetAll() {}
 
@@ -52,11 +58,6 @@ public class RepositoryAspect {
     public Object repositoryGetAllCall(ProceedingJoinPoint joinPoint) throws Throwable {
         return DatabaseEngine.getInstance().getEntities(joinPoint.getSignature().getDeclaringTypeName());
     }
-//
-//    @Around("call (void playground.*.*.add()")
-//    public void repositoryAddCall(ProceedingJoinPoint joinPoint) {
-//        System.out.println("Add method called");
-//    }
 //
 //    @Around("call (void playground.*.*.update(..)")
 //    public void repositoryUpdateCall(ProceedingJoinPoint joinPoint) {

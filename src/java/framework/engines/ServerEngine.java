@@ -55,17 +55,32 @@ public class ServerEngine {
             }
         }
         if (request.getMethod() == framework.server.http.Method.GET){
-            Method method = methodMap.get(request.getPath());
-            if (method == null){
-                throw new FrameworkException("POST method not found for path: " + request.getPath());
-            }
-            method.setAccessible(true);
-            if (method.getParameterTypes().length == 0){
-                System.out.println("METHOD NAME: " + method.getName());
-                return (Response) method.invoke(controllerMap.get(request.getPath()));
+            if (request.getPath().contains("?")){
+                Long id = Long.parseLong(request.getPath().split("\\?")[1].split("=")[1]);
+                String path = request.getPath().split("\\?")[0];
+
+                request.setPath(path);
+                Method method = methodMap.get(request.getPath());
+                if (method == null) {
+                    throw new FrameworkException("GET method not found for path: " + request.getPath());
+                }
+                method.setAccessible(true);
+                if (method.getParameterTypes().length == 1) {
+                    return (Response) method.invoke(controllerMap.get(request.getPath()), id);
+                }
             }
             else {
-                throw new FrameworkException("GET method don't have any parameters");
+                Method method = methodMap.get(request.getPath());
+                if (method == null) {
+                    throw new FrameworkException("POST method not found for path: " + request.getPath());
+                }
+                method.setAccessible(true);
+                if (method.getParameterTypes().length == 0) {
+                    System.out.println("METHOD NAME: " + method.getName());
+                    return (Response) method.invoke(controllerMap.get(request.getPath()));
+                } else {
+                    throw new FrameworkException("GET method don't have any parameters");
+                }
             }
 
         }

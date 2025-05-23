@@ -1,6 +1,7 @@
 package playground.controllers;
 
 import framework.annotations.components.Controller;
+import framework.annotations.methodes.Delete;
 import framework.annotations.methodes.Get;
 import framework.annotations.methodes.Post;
 import framework.server.http.JsonResponse;
@@ -24,5 +25,16 @@ public class EmployeeController {
         List<Employee> employeeList = employeeRepository.getAll();
         System.out.println("Lista: " + employeeList.size());
         return new JsonResponse(employeeList);
+    }
+
+    @Get(path = "/getOneEmployee")
+    public Response getOneEmployee(Long id){
+        Employee employee = employeeRepository.get(id);
+        return new JsonResponse(employee);
+    }
+
+    @Delete(path = "/deleteEmployee")
+    public void deleteEmployee(Long id){
+        employeeRepository.delete(id);
     }
 }

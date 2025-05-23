@@ -4,6 +4,8 @@ import framework.annotations.components.Controller;
 import framework.annotations.methodes.Delete;
 import framework.annotations.methodes.Get;
 import framework.annotations.methodes.Post;
+import framework.exceptions.FrameworkException;
+import framework.server.http.Response;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -47,6 +49,9 @@ public class DependencyEngine {
 
             for (Method method : cls.getDeclaredMethods()){
                 if (method.isAnnotationPresent(Get.class)){
+                    if (method.getReturnType() != Response.class){
+                        throw new FrameworkException("Method with @Get annotation must return Response object. Method: " + method.getName() + " in class: " + cls.getName() + " does not return Response object");
+                    }
                     ServerEngine.getInstance().insertMethod("GET " + controllerPath + method.getAnnotation(Get.class).path(), method, obj);
                     continue;
                 }

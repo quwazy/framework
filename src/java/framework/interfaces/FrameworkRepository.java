@@ -4,13 +4,13 @@ import java.util.List;
 
 public interface FrameworkRepository<T> {
     /// GET ONE
-    T get(int id);
+    T get(Long id);
     /// GET ALL
     List<T> getAll();
     /// ADD ONE
     void add(T object);
     /// UPDATE ONE
-    void update(int id, T object);
+    void update(Long id, T object);
     /// DELETE ONE
-    void delete(int id);
+    void delete(Long id);
 }

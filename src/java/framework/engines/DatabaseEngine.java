@@ -113,7 +113,7 @@ public class DatabaseEngine {
     }
 
     /**
-     *
+     * GET all entities from database table
      */
     public List<Object> getEntities(String repositoryName) throws ClassNotFoundException {
         String entityName = repositoryToEntityMap.get(repositoryName);
@@ -123,6 +123,31 @@ public class DatabaseEngine {
 
         Class<?> clazz = Class.forName(entityName);
         return database.get(clazz);
+    }
+
+    public Object getEntityById(String repositoryName, Long id) throws ClassNotFoundException, IllegalAccessException {
+        String entityName = repositoryToEntityMap.get(repositoryName);
+        if (entityName == null){
+            throw new FrameworkException("Repository: " + repositoryName + " is not working with Entity you provided");
+        }
+
+        Class<?> clazz =Class.forName(entityName);
+        List<Object> objectList = database.get(clazz);
+
+        for (Object obj : objectList) {
+            for (Field field : clazz.getDeclaredFields()) {
+                if (field.isAnnotationPresent(Id.class)) {
+                    field.setAccessible(true); // In case the field is private
+                    Object fieldValue = field.get(obj);
+
+                    if (fieldValue instanceof Long && ((Long) fieldValue).equals(id)) {
+                        return obj; // Found the match
+                    }
+                }
+            }
+        }
+
+        return null;
     }
 
     /**
