@@ -1,6 +1,0 @@
-Njegov zadatak je da nadje sve .class fajlove koji ce se koristiti u framework-u
-
-Cuva listu svih klasa, kao i liste svih klasa razvrstanih po anotacijama
-
-Kada pronadje sve klase pokrece inicijalizaciju database i dependency engine-a i predaje im
-klase koje su im potrebne za rad

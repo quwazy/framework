@@ -12,36 +12,40 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Scans directory which uses a framework.
+ * Looks for classes with annotations defined
+ * in framework.annotation package, sorts them by lists,
+ * and starts the initialization of
+ * DatabaseEngine & DependencyEngine.
+ */
 public class DiscoveryEngine {
     private static volatile DiscoveryEngine instance = null;
     private static final String PACKAGE_LOCATION = "src/java/";
     private static final String PACKAGE_NAME = "playground";
 
-    protected static List<Class<?>> classes;            //all classes in a project
-    protected static List<Class<?>> entityClasses;      //classes annotated with @Entity
-    protected static List<Class<?>> repositoryClasses;  //classes annotated with @Repository
-    protected static List<Class<?>> serviceClasses;     //classes annotated with @Service
-    protected static List<Class<?>> controllerClasses;  //classes annotated with @Controller
-    protected static List<Class<?>> componentClasses;   //classes annotated with @Component
+    protected static List<Class<?>> entityClassesList;      //classes annotated with @Entity
+    protected static List<Class<?>> repositoryClassesList;  //classes annotated with @Repository
+    protected static List<Class<?>> serviceClassesList;     //classes annotated with @Service
+    protected static List<Class<?>> controllerClassesList;  //classes annotated with @Controller
+    protected static List<Class<?>> componentClassesList;   //classes annotated with @Component
 
     private DiscoveryEngine() throws Exception {
-        classes = new ArrayList<>();
-        entityClasses = new ArrayList<>();
-        repositoryClasses = new ArrayList<>();
-        serviceClasses = new ArrayList<>();
-        controllerClasses = new ArrayList<>();
-        componentClasses = new ArrayList<>();
+        entityClassesList = new ArrayList<>();
+        repositoryClassesList = new ArrayList<>();
+        serviceClassesList = new ArrayList<>();
+        controllerClassesList = new ArrayList<>();
+        componentClassesList = new ArrayList<>();
 
         initClasses();
         initDatabase();
         initDependency();
     }
 
-    public static DiscoveryEngine getInstance() throws Exception {
+    public static void getInstance() throws Exception {
         if (instance == null) {
             instance = new DiscoveryEngine();
         }
-        return instance;
     }
 
     private static void initClasses() {
@@ -68,26 +72,25 @@ public class DiscoveryEngine {
 
                 try {
                     Class<?> clazz = Class.forName(packageName + "." + className);
-                    classes.add(clazz);
 
                     if (clazz.isAnnotationPresent(Entity.class)){
-                        entityClasses.add(clazz);
+                        entityClassesList.add(clazz);
                         continue;
                     }
                     if (clazz.isAnnotationPresent(Repository.class)){
-                        repositoryClasses.add(clazz);
+                        repositoryClassesList.add(clazz);
                         continue;
                     }
                     if (clazz.isAnnotationPresent(Service.class)){
-                        serviceClasses.add(clazz);
+                        serviceClassesList.add(clazz);
                         continue;
                     }
                     if (clazz.isAnnotationPresent(Controller.class)){
-                        controllerClasses.add(clazz);
+                        controllerClassesList.add(clazz);
                         continue;
                     }
                     if (clazz.isAnnotationPresent(Component.class)){
-                        componentClasses.add(clazz);
+                        componentClassesList.add(clazz);
                         continue;
                     }
                 }
@@ -98,14 +101,16 @@ public class DiscoveryEngine {
         }
     }
 
-    private static void initDatabase(){
-        DatabaseEngine.getInstance().createDatabase(entityClasses);
-        DatabaseEngine.getInstance().mapRepositoryToEntity(repositoryClasses);
+    private static void initDatabase()
+    {
+        DatabaseEngine.getInstance().createDatabase(entityClassesList);
+        DatabaseEngine.getInstance().mapRepositoryToEntity(repositoryClassesList);
     }
 
-    private static void initDependency() throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
-        DependencyEngine.getInstance().creteService(serviceClasses);
-        DependencyEngine.getInstance().creteController(controllerClasses);
-        DependencyEngine.getInstance().createComponents(componentClasses);
+    private static void initDependency() throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException
+    {
+        DependencyEngine.getInstance().creteService(serviceClassesList);
+        DependencyEngine.getInstance().creteController(controllerClassesList);
+        DependencyEngine.getInstance().createComponents(componentClassesList);
     }
 }
