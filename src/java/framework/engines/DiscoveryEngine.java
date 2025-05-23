@@ -24,7 +24,7 @@ public class DiscoveryEngine {
     protected static List<Class<?>> controllerClasses;  //classes annotated with @Controller
     protected static List<Class<?>> componentClasses;   //classes annotated with @Component
 
-    private DiscoveryEngine() throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
+    private DiscoveryEngine() throws Exception {
         classes = new ArrayList<>();
         entityClasses = new ArrayList<>();
         repositoryClasses = new ArrayList<>();
@@ -37,7 +37,7 @@ public class DiscoveryEngine {
         initDependency();
     }
 
-    public static DiscoveryEngine getInstance() throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
+    public static DiscoveryEngine getInstance() throws Exception {
         if (instance == null) {
             instance = new DiscoveryEngine();
         }
@@ -62,7 +62,8 @@ public class DiscoveryEngine {
         for (File file : files) {
             if (file.isDirectory()) {
                 scanDirectory(file, packageName + "." + file.getName());
-            } else if (file.getName().endsWith(".java")) {
+            }
+            else if (file.getName().endsWith(".java")) {
                 String className = file.getName().substring(0, file.getName().length() - 5); // Remove .java
 
                 try {
@@ -89,7 +90,8 @@ public class DiscoveryEngine {
                         componentClasses.add(clazz);
                         continue;
                     }
-                } catch (ClassNotFoundException e) {
+                }
+                catch (ClassNotFoundException e) {
                     throw new FrameworkException("Class not found: " + packageName + "." + className);
                 }
             }

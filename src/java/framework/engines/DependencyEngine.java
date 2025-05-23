@@ -48,15 +48,15 @@ public class DependencyEngine {
             for (Method method : cls.getDeclaredMethods()){
                 if (method.isAnnotationPresent(Get.class)){
                     ServerEngine.getInstance().insertMethod("GET " + controllerPath + method.getAnnotation(Get.class).path(), method, obj);
-                    break;
+                    continue;
                 }
                 if (method.isAnnotationPresent(Post.class)){
                     ServerEngine.getInstance().insertMethod("POST " + controllerPath + method.getAnnotation(Post.class).path(), method, obj);
-                    break;
+                    continue;
                 }
                 if (method.isAnnotationPresent(Delete.class)){
                     ServerEngine.getInstance().insertMethod("DELETE " + controllerPath + method.getAnnotation(Delete.class).path(), method, obj);
-                    break;
+                    continue;
                 }
             }
         }
@@ -68,5 +68,4 @@ public class DependencyEngine {
             componentMap.put(cls.getName(), obj);
         }
     }
-
 }

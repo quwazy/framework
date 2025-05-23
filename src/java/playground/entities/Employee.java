@@ -9,4 +9,13 @@ public class Employee {
     private Long id;
     private String name;
     private String email;
+
+    @Override
+    public String toString() {
+        return "Employee{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", email='" + email + '\'' +
+                '}';
+    }
 }

@@ -33,6 +33,7 @@ public class ServerEngine {
             throw new FrameworkException("Path: " + path + " already exists.");
         }
 
+        System.out.println("Inserted mehtod on path: " + path);
         controllerMap.put(path, controller);
         methodMap.put(path, method);
     }
@@ -40,15 +41,18 @@ public class ServerEngine {
     public Response makeResponse(Request request) throws InvocationTargetException, IllegalAccessException, ClassNotFoundException, NoSuchMethodException, InstantiationException {
         if (request.getMethod() == framework.server.http.Method.POST){
             Method method = methodMap.get(request.getPath());
+            if (method == null){
+                throw new FrameworkException("POST method not found for path: " + request.getPath());
+            }
             method.setAccessible(true);
 
             if (method.getParameterTypes().length ==1){
                 Object obj = DatabaseEngine.getInstance().createEntity(method.getParameterTypes()[0].getName(), request.getParameters());
                 method.invoke(controllerMap.get(request.getPath()), obj);
-            }else {
+            }
+            else {
                 throw new FrameworkException("POST method must have only one parameter");
             }
-
         }
 
         return new SuccessfulResponse();

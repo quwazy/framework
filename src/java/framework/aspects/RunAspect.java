@@ -14,7 +14,7 @@ public class RunAspect {
     }
 
     @Before("beginningPoint()")
-    public void beforeMain() throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
+    public void beforeMain() throws Exception {
         System.out.println("Running application");
         DiscoveryEngine.getInstance();
     }

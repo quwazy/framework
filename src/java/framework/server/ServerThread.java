@@ -27,7 +27,8 @@ public class ServerThread implements Runnable {
                     new BufferedWriter(
                             new OutputStreamWriter(
                                     socket.getOutputStream())), true);
-        } catch (IOException e) {
+        }
+        catch (IOException e) {
             closeSocket();
             throw new FrameworkException("Failed to create BufferedReader/PrintWriter");
         }
@@ -43,9 +44,11 @@ public class ServerThread implements Runnable {
             }
 
             out.println(ServerEngine.getInstance().makeResponse(request).render());
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             throw new RuntimeException(e);
-        } finally {
+        }
+        finally {
             closeSocket();
         }
     }
@@ -82,20 +85,18 @@ public class ServerThread implements Runnable {
             /// request with JSON
             if (contentType != null && contentType.contains("application/json")) {
                 Gson gson = new Gson();
-                // Parse the JSON string into a HashMap
-                HashMap<String, Object> jsonMap = gson.fromJson(body, HashMap.class);
-
+                HashMap<String, Object> jsonMap = gson.fromJson(body, HashMap.class);   //Parse the JSON string into a HashMap
                 for (Map.Entry<String, Object> entry : jsonMap.entrySet()) {
                     parameters.put(entry.getKey(), entry.getValue().toString());
-                    System.out.println("Found parameter: " + entry.getKey() + " = " + entry.getValue());
                 }
-
-            } else {
+            }
+            else {
                 // Handle other formats if needed
                 System.out.println("Unsupported content type: ");
             }
             /// request with FILE
         }
+
         return new Request(method, route, header, parameters);
     }
 
@@ -104,7 +105,8 @@ public class ServerThread implements Runnable {
             in.close();
             out.close();
             socket.close();
-        } catch (IOException e) {
+        }
+        catch (IOException e) {
             throw new FrameworkException("Failed to close socket");
         }
     }

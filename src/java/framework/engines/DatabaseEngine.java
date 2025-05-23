@@ -7,7 +7,6 @@ import framework.interfaces.FrameworkRepository;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -19,10 +18,12 @@ public class DatabaseEngine {
     private static Long idCounter = 1L;                             //id counter
     private static Map<Class<?>, List<Object>> database;            //class -> list of entities
     private static Map<String, String> repositoryToEntityMap;       //repository name -> class name
+    private static Map<Long, Class<?>> idToClassNameMap;              //id in database -> class's name in database
 
     private DatabaseEngine() {
         database = new HashMap<>();
         repositoryToEntityMap = new HashMap<>();
+        idToClassNameMap = new HashMap<>();
     }
 
     public static DatabaseEngine getInstance() {
@@ -59,25 +60,56 @@ public class DatabaseEngine {
         for (Class<?> cls : classes) {
             if (FrameworkRepository.class.isAssignableFrom(cls) && cls.isAnnotationPresent(Repository.class)){
                 repositoryToEntityMap.put(cls.getName(), cls.getAnnotation(Repository.class).entity().getName());
-
-                //dodavanje set polja
-            }else{
+            }
+            else{
                 throw new FrameworkException("Class: " + cls.getName() + " does not implement FrameworkRepository interface or does not have @Repository annotation");
             }
         }
     }
 
+    /**
+     * Saving Object into the database
+     * @param repositoryName
+     * @param newEntity
+     */
     public void insertEntity(String repositoryName, Object newEntity) throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
         String entityName = repositoryToEntityMap.get(repositoryName);
         if (entityName == null){
             throw new FrameworkException("Repository: " + repositoryName + " is not working with Entity you provided");
         }
 
-        Class clazz = Class.forName(entityName);
+        Class<?> clazz = Class.forName(entityName);
+        Object obj = clazz.getDeclaredConstructor().newInstance();
+        Field[] fields = clazz.getDeclaredFields();
+        for (Field field : fields) {
+            field.setAccessible(true); // allow access to private fields
 
-        //treba mu dodati ID
-
-        System.out.println("Called");
+            if (field.isAnnotationPresent(Id.class)) {
+                // Assign a new Long ID (you can generate this however you like)
+                Long generatedId = getNextId();
+                field.set(obj, generatedId);
+                idToClassNameMap.put(generatedId, clazz);
+            } 
+            else {
+                // Copy value from original object
+                Field sourceField;
+                try {
+                    sourceField = newEntity.getClass().getDeclaredField(field.getName());
+                    sourceField.setAccessible(true);
+                    Object value = sourceField.get(newEntity);
+                    field.set(obj, value);
+                } catch (NoSuchFieldException e) {
+                    // Skip if field not found (optional)
+                }
+            }
+        }
+        
+        database.get(clazz).add(obj);
+        //TODO
+        for (Class<?> cls : database.keySet()){
+            List<Object> objectList = database.get(cls);
+            objectList.forEach(System.out::println);
+        }
     }
 
     /**
@@ -131,42 +163,8 @@ public class DatabaseEngine {
      * Assigning primary key value for new entities
      * @return next Long value for Id filed
      */
-    private Long getNextId(){
+    private static Long getNextId(){
         return idCounter++;
-    }
-
-    /**
-     * Saves an object in a database, based on
-     * JSON fields. Creates object, maps it's
-     * fields and insert values into fields
-     * @param jsonMap from http request
-     */
-    protected void addEntity(HashMap<String, String> jsonMap) throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
-        String className = getEntityName(jsonMap);
-
-        if (className == null){
-            throw new FrameworkException("No entity found for given JSON map");
-        }
-
-        Class<?> cls = Class.forName(className);
-        Object obj = cls.getDeclaredConstructor().newInstance();   //create a new object
-
-        for (Field field : cls.getDeclaredFields()) {
-            if (field.isAnnotationPresent(Id.class)) {      //insert new ID value
-                field.setAccessible(true);
-                field.set(obj, getNextId());
-            } else {
-                field.setAccessible(true);
-                String value = jsonMap.get(field.getName());
-                if (value != null) {
-                    Object convertedValue = convertValue(field.getType(), value);
-                    field.set(obj, convertedValue);
-                }
-            }
-        }
-        //TODO
-        System.out.println(obj.toString());
-        database.get(cls).add(obj);     // Save to a database
     }
 
     /**
@@ -209,15 +207,20 @@ public class DatabaseEngine {
     private Object convertValue(Class<?> type, String value) {
         if (type == String.class) {
             return value;
-        } else if (type == int.class || type == Integer.class) {
+        }
+        else if (type == int.class || type == Integer.class) {
             return Integer.parseInt(value);
-        } else if (type == long.class || type == Long.class) {
+        }
+        else if (type == long.class || type == Long.class) {
             return Long.parseLong(value);
-        } else if (type == boolean.class || type == Boolean.class) {
+        }
+        else if (type == boolean.class || type == Boolean.class) {
             return Boolean.parseBoolean(value);
-        } else if (type == double.class || type == Double.class) {
+        }
+        else if (type == double.class || type == Double.class) {
             return Double.parseDouble(value);
-        } else if (type == float.class || type == Float.class) {
+        }
+        else if (type == float.class || type == Float.class) {
             return Float.parseFloat(value);
         }
         throw new FrameworkException("Unsupported field type: " + type);

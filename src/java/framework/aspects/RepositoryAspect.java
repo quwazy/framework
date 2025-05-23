@@ -42,10 +42,13 @@ public class RepositoryAspect {
 //        System.out.println("Get method called");
 //    }
 //
-//    @Around("call (void playground.*.*.getAll()")
-//    public void repositoryGetAllCall(ProceedingJoinPoint joinPoint) {
-//        System.out.println("Get All method called");
-//    }
+    @Pointcut("call (void playground.*.*.getAll(..))")
+    public void repositoryMethodGetAll() {}
+
+    @Around("repositoryMethodGetAll()")
+    public void repositoryGetAllCall(ProceedingJoinPoint joinPoint) {
+        System.out.println("Get All method called");
+    }
 //
 //    @Around("call (void playground.*.*.add()")
 //    public void repositoryAddCall(ProceedingJoinPoint joinPoint) {
