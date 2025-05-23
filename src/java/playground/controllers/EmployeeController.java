@@ -8,6 +8,8 @@ import framework.server.http.Response;
 import playground.entities.Employee;
 import playground.repositories.EmployeeRepository;
 
+import java.util.List;
+
 @Controller(path = "/employees")
 public class EmployeeController {
     private EmployeeRepository employeeRepository;
@@ -19,6 +21,8 @@ public class EmployeeController {
 
     @Get(path = "/getAllEmployees")
     public Response getAllEmployees(){
-        return new JsonResponse(employeeRepository.getAll());
+        List<Employee> employeeList = employeeRepository.getAll();
+        System.out.println("Lista: " + employeeList.size());
+        return new JsonResponse(employeeList);
     }
 }

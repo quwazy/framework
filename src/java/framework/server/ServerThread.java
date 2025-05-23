@@ -46,6 +46,10 @@ public class ServerThread implements Runnable {
             out.println(ServerEngine.getInstance().makeResponse(request).render());
         }
         catch (Exception e) {
+            // Log the error
+            System.err.println("Error processing request: " + e.getMessage());
+            // Send an error response to the client
+            out.println("HTTP/1.1 500 Internal Server Error\n\nAn error occurred while processing your request");
             throw new RuntimeException(e);
         }
         finally {

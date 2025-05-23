@@ -46,13 +46,28 @@ public class ServerEngine {
             }
             method.setAccessible(true);
 
-            if (method.getParameterTypes().length ==1){
+            if (method.getParameterTypes().length == 1){
                 Object obj = DatabaseEngine.getInstance().createEntity(method.getParameterTypes()[0].getName(), request.getParameters());
                 method.invoke(controllerMap.get(request.getPath()), obj);
             }
             else {
                 throw new FrameworkException("POST method must have only one parameter");
             }
+        }
+        if (request.getMethod() == framework.server.http.Method.GET){
+            Method method = methodMap.get(request.getPath());
+            if (method == null){
+                throw new FrameworkException("POST method not found for path: " + request.getPath());
+            }
+            method.setAccessible(true);
+            if (method.getParameterTypes().length == 0){
+                System.out.println("METHOD NAME: " + method.getName());
+                return (Response) method.invoke(controllerMap.get(request.getPath()));
+            }
+            else {
+                throw new FrameworkException("GET method don't have any parameters");
+            }
+
         }
 
         return new SuccessfulResponse();

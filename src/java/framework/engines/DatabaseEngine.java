@@ -113,6 +113,19 @@ public class DatabaseEngine {
     }
 
     /**
+     *
+     */
+    public List<Object> getEntities(String repositoryName) throws ClassNotFoundException {
+        String entityName = repositoryToEntityMap.get(repositoryName);
+        if (entityName == null){
+            throw new FrameworkException("Repository: " + repositoryName + " is not working with Entity you provided");
+        }
+
+        Class<?> clazz = Class.forName(entityName);
+        return database.get(clazz);
+    }
+
+    /**
      * For given JSON return Object
      */
     protected Object createEntity(String className, HashMap<String, String> jsonMap) throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
