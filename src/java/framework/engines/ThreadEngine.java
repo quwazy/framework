@@ -1,21 +1,20 @@
-package framework.server;
+package framework.engines;
 
 import com.google.gson.Gson;
-import framework.engines.ServerEngine;
 import framework.exceptions.FrameworkException;
-import framework.server.http.*;
+import framework.http.*;
 
 import java.io.*;
 import java.net.Socket;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ServerThread implements Runnable {
+public class ThreadEngine implements Runnable {
     private Socket socket;
     private BufferedReader in;
     private PrintWriter out;
 
-    public ServerThread(Socket socket) {
+    protected ThreadEngine(Socket socket) {
         this.socket = socket;
 
         try {

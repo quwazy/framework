@@ -8,6 +8,7 @@
         <include within="playground.controllers.EmployeeController"/>
         <include within="playground.repositories.*"/>
         <include within="playground.repositories.EmployeeRepository"/>
+        <include within="playground.Main"/>
     </weaver>
     <aspects>
         <aspect name="framework.aspects.LoggingAspect"/>

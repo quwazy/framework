@@ -1,4 +1,4 @@
-package framework.server.http;
+package framework.http;
 
 public abstract class Response {
     protected Header headers;

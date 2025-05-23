@@ -4,8 +4,8 @@ import framework.annotations.components.Controller;
 import framework.annotations.methodes.Delete;
 import framework.annotations.methodes.Get;
 import framework.annotations.methodes.Post;
-import framework.server.http.JsonResponse;
-import framework.server.http.Response;
+import framework.http.JsonResponse;
+import framework.http.Response;
 import playground.entities.Employee;
 import playground.repositories.EmployeeRepository;
 

@@ -5,7 +5,7 @@ import framework.annotations.methodes.Delete;
 import framework.annotations.methodes.Get;
 import framework.annotations.methodes.Post;
 import framework.exceptions.FrameworkException;
-import framework.server.http.Response;
+import framework.http.Response;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
