@@ -1,3 +1,0 @@
-Cuva objekte klasa koji su anotirani sa @Service @Controller @Component
-
-Zaduzen je da dobavi objekta polja iznad kog stoji anotacija @Autowired

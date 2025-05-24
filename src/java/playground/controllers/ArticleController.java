@@ -1,11 +1,13 @@
 package playground.controllers;
 
+import framework.annotations.components.Autowired;
 import framework.annotations.components.Controller;
 import framework.annotations.methodes.Get;
 import framework.annotations.methodes.Post;
 import framework.http.JsonResponse;
 import framework.http.Response;
 import playground.entities.Article;
+import playground.entities.Employee;
 import playground.repositories.ArticleRepository;
 
 @Controller( path = "/articles")

@@ -8,14 +8,14 @@ import framework.annotations.databases.Entity;
 import framework.exceptions.FrameworkException;
 
 import java.io.File;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Scans directory which uses a framework.
  * Looks for classes with annotations defined
- * in framework.annotation package, sorts them by lists,
+ * in the framework.annotation package,
+ * sorts them by lists,
  * and starts the initialization of
  * DatabaseEngine & DependencyEngine.
  */
@@ -24,11 +24,11 @@ public class DiscoveryEngine {
     private static final String PACKAGE_LOCATION = "src/java/";
     private static final String PACKAGE_NAME = "playground";
 
-    protected static List<Class<?>> entityClassesList;      //classes annotated with @Entity
-    protected static List<Class<?>> repositoryClassesList;  //classes annotated with @Repository
-    protected static List<Class<?>> serviceClassesList;     //classes annotated with @Service
-    protected static List<Class<?>> controllerClassesList;  //classes annotated with @Controller
-    protected static List<Class<?>> componentClassesList;   //classes annotated with @Component
+    private static List<Class<?>> entityClassesList;      //classes annotated with @Entity
+    private static List<Class<?>> repositoryClassesList;  //classes annotated with @Repository
+    private static List<Class<?>> serviceClassesList;     //classes annotated with @Service
+    private static List<Class<?>> controllerClassesList;  //classes annotated with @Controller
+    private static List<Class<?>> componentClassesList;   //classes annotated with @Component
 
     private DiscoveryEngine() throws Exception {
         entityClassesList = new ArrayList<>();
@@ -68,7 +68,7 @@ public class DiscoveryEngine {
                 scanDirectory(file, packageName + "." + file.getName());
             }
             else if (file.getName().endsWith(".java")) {
-                String className = file.getName().substring(0, file.getName().length() - 5); // Remove .java
+                String className = file.getName().substring(0, file.getName().length() - 5);
 
                 try {
                     Class<?> clazz = Class.forName(packageName + "." + className);
@@ -101,14 +101,12 @@ public class DiscoveryEngine {
         }
     }
 
-    private static void initDatabase()
-    {
+    private static void initDatabase() {
         DatabaseEngine.getInstance().createDatabase(entityClassesList);
         DatabaseEngine.getInstance().mapRepositoryToEntity(repositoryClassesList);
     }
 
-    private static void initDependency() throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException
-    {
+    private static void initDependency() throws Exception {
         DependencyEngine.getInstance().creteService(serviceClassesList);
         DependencyEngine.getInstance().creteController(controllerClassesList);
         DependencyEngine.getInstance().createComponents(componentClassesList);
