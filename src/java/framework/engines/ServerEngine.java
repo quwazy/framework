@@ -73,24 +73,41 @@ public class ServerEngine {
     }
 
     /**
-     *
+     * Return response for specified route
      * @param request Request object received from the client.
      * @return Response object based on the request method.
      */
     protected Response makeResponse(Request request) throws InvocationTargetException, IllegalAccessException, ClassNotFoundException, NoSuchMethodException, InstantiationException {
         switch (request.getMethod()){
             case GET -> {
-                Method method = methodMap.get(request.getPath());
-                if (method == null) {
-                    throw new FrameworkException("GET method not found for path: " + request.getPath());
-                }
+                if (request.getPath().contains("?")) {
+                    Long id = Long.parseLong(request.getPath().split("\\?")[1].split("=")[1]);
+                    request.setPath(request.getPath().split("\\?")[0]);
 
-                method.setAccessible(true);
-                if (method.getParameterTypes().length == 0) {
-                    return (Response) method.invoke(controllerMap.get(request.getPath()));
+                    Method method = methodMap.get(request.getPath());
+                    if (method == null) {
+                        throw new FrameworkException("GET method not found for path: " + request.getPath());
+                    }
+                    if (method.getParameterTypes().length == 1){
+                        method.setAccessible(true);
+                        return (Response) method.invoke(controllerMap.get(request.getPath()), id);
+                    }
+                    else {
+                        throw new FrameworkException("GET method must have only one parameter");
+                    }
                 }
                 else {
-                    throw new FrameworkException("GET method shouldn't have any parameters");
+                    Method method = methodMap.get(request.getPath());
+                    if (method == null) {
+                        throw new FrameworkException("GET method not found for path: " + request.getPath());
+                    }
+                    if (method.getParameterTypes().length == 0) {
+                        method.setAccessible(true);
+                        return (Response) method.invoke(controllerMap.get(request.getPath()));
+                    }
+                    else {
+                        throw new FrameworkException("GET method must have no parameters");
+                    }
                 }
             }
 
