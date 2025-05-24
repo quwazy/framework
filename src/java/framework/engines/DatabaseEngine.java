@@ -12,18 +12,25 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Creates a database for all classes annotated with @Entity annotation.
+ * Maps Repository to it's entity class name.
+ * Inserts new entities into database.
+ * Removes entities from database.
+ * Gets all entities from database.
+ * Gets entity by id from database.
+ * Creates an object from JSON map.
+ */
 public class DatabaseEngine {
     private static volatile DatabaseEngine instance = null;
+    private static Long idCounter = 1L;
 
-    private static Long idCounter = 1L;                             //id counter
     private static Map<Class<?>, List<Object>> database;            //class -> list of entities
     private static Map<String, String> repositoryToEntityMap;       //repository name -> class name
-    private static Map<Long, Class<?>> idToClassNameMap;              //id in database -> class's name in database
 
     private DatabaseEngine() {
         database = new HashMap<>();
         repositoryToEntityMap = new HashMap<>();
-        idToClassNameMap = new HashMap<>();
     }
 
     public static DatabaseEngine getInstance() {
@@ -33,36 +40,40 @@ public class DatabaseEngine {
         return instance;
     }
 
+    /**
+     * Creating a database for all classes annotated with @Entity annotation.
+     * @param classes List of classes annotated with @Entity annotation.
+     */
     protected void createDatabase(List<Class<?>> classes) {
         for (Class<?> cls : classes) {
-            boolean foundId = false;
-
-
+            boolean found = false;
             for (Field field : cls.getDeclaredFields()){
                 if (field.isAnnotationPresent(Id.class)) {
                     if (field.getType() != Long.class){
                         throw new FrameworkException("Field: " + field.getName() + " of class: " + cls.getName() + " must be of type Long");
                     }
-                    foundId = true;
+                    database.put(cls, new ArrayList<>());
+                    found = true;
                     break;
                 }
             }
-
-            if (foundId){
-                database.put(cls, new ArrayList<Object>());
-            }else {
+            if (!found){
                 throw new FrameworkException("Class: " + cls.getName() + " does not have @Id annotation");
             }
         }
     }
 
+    /**
+     * Mapping Repository to it's entity class name.
+     * @param classes List of classes annotated with @Repository annotation.
+     */
     protected void mapRepositoryToEntity(List<Class<?>> classes) {
         for (Class<?> cls : classes) {
             if (FrameworkRepository.class.isAssignableFrom(cls) && cls.isAnnotationPresent(Repository.class)){
                 repositoryToEntityMap.put(cls.getName(), cls.getAnnotation(Repository.class).entity().getName());
             }
             else{
-                throw new FrameworkException("Class: " + cls.getName() + " does not implement FrameworkRepository interface or does not have @Repository annotation");
+                throw new FrameworkException("Class: " + cls.getName() + " with @Repository annotation does not implement FrameworkRepository interface.");
             }
         }
     }
@@ -88,7 +99,6 @@ public class DatabaseEngine {
                 // Assign a new Long ID (you can generate this however you like)
                 Long generatedId = getNextId();
                 field.set(obj, generatedId);
-                idToClassNameMap.put(generatedId, clazz);
             } 
             else {
                 // Copy value from original object
@@ -113,41 +123,37 @@ public class DatabaseEngine {
     }
 
     /**
-     * GET all entities from database table
+     * GET one entity from the database table by id
+     * @param repositoryName name of repository.
+     * @param id of entity in the database table.
+     * @return Object of entity with given id.
      */
-    public List<Object> getEntities(String repositoryName) throws ClassNotFoundException {
-        String entityName = repositoryToEntityMap.get(repositoryName);
-        if (entityName == null){
-            throw new FrameworkException("Repository: " + repositoryName + " is not working with Entity you provided");
-        }
-
-        Class<?> clazz = Class.forName(entityName);
-        return database.get(clazz);
-    }
-
     public Object getEntityById(String repositoryName, Long id) throws ClassNotFoundException, IllegalAccessException {
-        String entityName = repositoryToEntityMap.get(repositoryName);
-        if (entityName == null){
-            throw new FrameworkException("Repository: " + repositoryName + " is not working with Entity you provided");
-        }
-
-        Class<?> clazz = Class.forName(entityName);
+        Class<?> clazz = Class.forName(repositoryToEntityMap.get(repositoryName));
         List<Object> objectList = database.get(clazz);
 
         for (Object obj : objectList) {
             for (Field field : clazz.getDeclaredFields()) {
                 if (field.isAnnotationPresent(Id.class)) {
-                    field.setAccessible(true); // In case the field is private
+                    field.setAccessible(true);
                     Object fieldValue = field.get(obj);
 
-                    if (fieldValue instanceof Long && ((Long) fieldValue).equals(id)) {
-                        return obj; // Found the match
+                    if (fieldValue.equals(id)) {
+                        return obj;
                     }
                 }
             }
         }
 
         return null;
+    }
+
+    /**
+     * GET all entities from the database table.
+     * @param repositoryName name of repository.
+     */
+    public List<Object> getAllEntities(String repositoryName) throws ClassNotFoundException {
+        return database.get(Class.forName(repositoryToEntityMap.get(repositoryName)));
     }
 
     /**
@@ -177,25 +183,23 @@ public class DatabaseEngine {
 
         return obj;
     }
+
     /**
-     * Remove entity from the database's table
+     * DELETE entity from the database table by id param.
+     * @param repositoryName name of repository.
+     * @param id of entity in the database table.
      */
     public void deleteEntity(String repositoryName, Long id) throws ClassNotFoundException, IllegalAccessException {
-        String entityName = repositoryToEntityMap.get(repositoryName);
-        if (entityName == null){
-            throw new FrameworkException("Repository: " + repositoryName + " is not working with Entity you provided");
-        }
-
-        Class<?> clazz = Class.forName(entityName);
+        Class<?> clazz = Class.forName(repositoryToEntityMap.get(repositoryName));
         List<Object> objectList = database.get(clazz);
 
         for (Object obj : objectList) {
             for (Field field : clazz.getDeclaredFields()) {
                 if (field.isAnnotationPresent(Id.class)) {
-                    field.setAccessible(true); // In case the field is private
+                    field.setAccessible(true);
                     Object fieldValue = field.get(obj);
 
-                    if (fieldValue instanceof Long && ((Long) fieldValue).equals(id)) {
+                    if (fieldValue.equals(id)) {
                         database.get(clazz).remove(obj);
                     }
                 }
@@ -228,36 +232,6 @@ public class DatabaseEngine {
      */
     private static Long getNextId(){
         return idCounter++;
-    }
-
-    /**
-     * For given JSON map checks which entity in
-     * a database has same fields as given JSON man
-     * @param jsonMap from http request
-     * @return class name of entity in a database
-     */
-    private String getEntityName(HashMap<String, String> jsonMap){
-        for (Class<?> cls : database.keySet()){
-            if (jsonMap.size() == cls.getDeclaredFields().length - 1){  //ignore @ID field
-                int counter = jsonMap.size();
-                for (String jsonFieldName : jsonMap.keySet()){
-                    for (Field field : cls.getDeclaredFields()){
-                        if (field.isAnnotationPresent(Id.class)){
-                            continue;
-                        }
-                        if (field.getName().equals(jsonFieldName)){
-                            counter--;
-                        }
-                    }
-                }
-
-                if (counter == 0){                  //if every field in a map has a pair in class, we found an exact class
-                    return cls.getName();
-                }
-            }
-        }
-
-        return null;
     }
 
     /**

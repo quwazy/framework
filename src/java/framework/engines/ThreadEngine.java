@@ -90,7 +90,7 @@ public class ThreadEngine implements Runnable {
 
             String contentType = headers.get("content-type");
 
-            /// request with JSON
+            /// request with JSON body
             if (contentType != null && contentType.contains("application/json")) {
                 Gson gson = new Gson();
                 HashMap<String, Object> jsonMap = gson.fromJson(body, HashMap.class);   //Parse the JSON string into a HashMap
