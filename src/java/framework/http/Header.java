@@ -11,14 +11,14 @@ public class Header {
     protected HashMap<String, String> headers;
 
     /**
-     * Construct header with given parameters.
+     * Construct a header with given parameters.
      */
     public Header() {
         this.headers = new HashMap<>();
     }
 
     /**
-     * Add header pair.
+     * Add a header pair.
      *
      * @param name: name of the header
      * @param value: value of the header

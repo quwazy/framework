@@ -8,7 +8,7 @@ import framework.annotations.methodes.Get;
 import framework.annotations.methodes.Post;
 import framework.annotations.methodes.Put;
 import framework.exceptions.FrameworkException;
-import framework.http.Response;
+import framework.http.responses.Response;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;

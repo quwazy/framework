@@ -3,12 +3,17 @@ package framework.engines;
 import com.google.gson.Gson;
 import framework.exceptions.FrameworkException;
 import framework.http.*;
+import framework.http.responses.ErrorResponse;
 
 import java.io.*;
 import java.net.Socket;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Accepts a request from a client and processes it.
+ * Sends a response to the client.
+ */
 public class ThreadEngine implements Runnable {
     private Socket socket;
     private BufferedReader in;
@@ -38,17 +43,13 @@ public class ThreadEngine implements Runnable {
         try {
             Request request = generateRequest();
             if (request == null) {
-                closeSocket();
                 return;
             }
 
             out.println(ServerEngine.getInstance().makeResponse(request).render());
         }
         catch (Exception e) {
-            // Log the error
-            System.err.println("Error processing request: " + e.getMessage());
-            // Send an error response to the client
-            out.println("HTTP/1.1 500 Internal Server Error\n\nAn error occurred while processing your request");
+            out.println(new ErrorResponse().render());
             throw new RuntimeException(e);
         }
         finally {
@@ -56,6 +57,10 @@ public class ThreadEngine implements Runnable {
         }
     }
 
+    /**
+     * Generates a request object from the input stream.
+     * @return Request object or null if the input stream is empty.
+     */
     private Request generateRequest() throws IOException {
         String line = in.readLine();
         if (line == null) {
@@ -65,42 +70,40 @@ public class ThreadEngine implements Runnable {
         String[] actionRow = line.split(" ");
         Method method = Method.valueOf(actionRow[0]);
         String route = method + " " + actionRow[1];
-        Header header = new Header();
-        HashMap<String, String> parameters = new HashMap<>();
+        Header headers = new Header();
+        HashMap<String, String> jsonBody = new HashMap<>();
 
+        /// Reading headers from a request
         do {
             line = in.readLine();
             String[] headerRow = line.split(": ");
             if (headerRow.length == 2) {
-//                System.out.println("Found header: " + headerRow[0] + " = " + headerRow[1]);
-                header.add(headerRow[0].toLowerCase(), headerRow[1]);
+                headers.add(headerRow[0].toLowerCase(), headerRow[1]);
             }
         } while (!line.trim().isEmpty());
 
         if (method.equals(Method.POST)) {
-            int contentLength = Integer.parseInt(header.get("content-length"));
+            int contentLength = Integer.parseInt(headers.get("content-length"));
             char[] buff = new char[contentLength];
             in.read(buff, 0, contentLength);
             String body = new String(buff);
 
-            String contentType = header.get("content-type");
+            String contentType = headers.get("content-type");
 
             /// request with JSON
             if (contentType != null && contentType.contains("application/json")) {
                 Gson gson = new Gson();
                 HashMap<String, Object> jsonMap = gson.fromJson(body, HashMap.class);   //Parse the JSON string into a HashMap
                 for (Map.Entry<String, Object> entry : jsonMap.entrySet()) {
-                    parameters.put(entry.getKey(), entry.getValue().toString());
+                    jsonBody.put(entry.getKey(), entry.getValue().toString());
                 }
             }
             else {
-                // Handle other formats if needed
-                System.out.println("Unsupported content type: ");
+                throw new FrameworkException("Unsupported content type: " + contentType);
             }
-            /// request with FILE
         }
 
-        return new Request(method, route, header, parameters);
+        return new Request(method, route, headers, jsonBody);
     }
 
     private void closeSocket(){

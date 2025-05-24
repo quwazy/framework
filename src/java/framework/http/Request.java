@@ -6,41 +6,13 @@ public class Request {
     private Method method;
     private String path;
     private Header headers;
-    private HashMap<String, String> parameters;
+    private HashMap<String, String> jsonBody;
 
-    public Request(Method method, String path, Header headers) {
+    public Request(Method method, String path, Header headers, HashMap<String, String> jsonBody) {
         this.method = method;
         this.path = path;
         this.headers = headers;
-        this.parameters = new HashMap<>();
-    }
-
-    public Request(Method method, String path, Header headers, HashMap<String, String> parameters) {
-        this.method = method;
-        this.path = path;
-        this.headers = headers;
-        this.parameters = parameters;
-    }
-
-    public static HashMap<String, String> getParametersFromRoute(String route) {
-        String[] splittedRoute = route.split("\\?");
-
-        if(splittedRoute.length == 1) {
-            return new HashMap<String, String>();
-        }
-
-        return getParametersFromString(splittedRoute[1]);
-    }
-
-    public static HashMap<String, String> getParametersFromString(String parametersString) {
-        HashMap<String, String> parameters = new HashMap<String, String>();
-        String[] pairs = parametersString.split("&");
-        for (String pair:pairs) {
-            String[] keyPair = pair.split("=");
-            parameters.put(keyPair[0], keyPair[1]);
-        }
-
-        return parameters;
+        this.jsonBody = jsonBody;
     }
 
     public Method getMethod() {
@@ -67,11 +39,11 @@ public class Request {
         this.headers = headers;
     }
 
-    public HashMap<String, String> getParameters() {
-        return parameters;
+    public HashMap<String, String> getJsonBody() {
+        return jsonBody;
     }
 
-    public void setParameters(HashMap<String, String> parameters) {
-        this.parameters = parameters;
+    public void setJsonBody(HashMap<String, String> jsonBody) {
+        this.jsonBody = jsonBody;
     }
 }
