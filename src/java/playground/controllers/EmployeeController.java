@@ -8,17 +8,20 @@ import framework.http.JsonResponse;
 import framework.http.Response;
 import playground.entities.Employee;
 import playground.repositories.EmployeeRepository;
+import playground.service.EmployeeService;
 
 import java.util.List;
 
 @Controller(path = "/employees")
 public class EmployeeController {
     private EmployeeRepository employeeRepository;
+    private EmployeeService employeeService;
 
     @Post(path = "/add")
     public void addEmployee(Employee employee){
         employee.setName(employee.getName().toUpperCase());
         employeeRepository.add(employee);
+        employeeService.sayHello();
     }
 
     @Get(path = "/getAllEmployees")
