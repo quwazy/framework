@@ -1,11 +1,12 @@
 package framework.engines;
 
 import framework.annotations.components.Autowired;
-import framework.annotations.components.Component;
 import framework.annotations.components.Controller;
+import framework.annotations.components.Service;
 import framework.annotations.methodes.Delete;
 import framework.annotations.methodes.Get;
 import framework.annotations.methodes.Post;
+import framework.annotations.methodes.Put;
 import framework.exceptions.FrameworkException;
 import framework.http.Response;
 
@@ -51,11 +52,9 @@ public class DependencyEngine {
     protected void creteController(List<Class<?>> classes) throws Exception {
         for (Class<?> cls : classes) {
             for (Field field : cls.getDeclaredFields()){
-                if (field.isAnnotationPresent(Autowired.class) && field.getType().isAnnotationPresent(Component.class)){
-                    throw new FrameworkException("Classes with @Component annotation cannot be injected into @Controller classes with @Autowired. Class: " + cls.getName() + " has @Autowired annotation in field: " + field.getName());
-                }
-                if (field.isAnnotationPresent(Autowired.class) && field.getType().isAnnotationPresent(Controller.class)){
-                    throw new FrameworkException("Classes with @Controller annotation cannot be injected into @Controller classes with @Autowired. Class: " + cls.getName() + " has @Autowired annotation in field: " + field.getName());
+                /// Forbidden to use @Autowired in Controller classes
+                if (field.isAnnotationPresent(Autowired.class)){
+                    throw new FrameworkException("Forbidden to use @Autowired annotation in @Controller classes. Class: " + cls.getName() + " has @Autowired annotation in field: " + field.getName() );
                 }
             }
 
@@ -76,6 +75,10 @@ public class DependencyEngine {
                     ServerEngine.getInstance().insertMethod("POST " + controllerPath + method.getAnnotation(Post.class).path(), method, obj);
                     continue;
                 }
+                if (method.isAnnotationPresent(Put.class)){
+                    ServerEngine.getInstance().insertMethod("PUT " + controllerPath + method.getAnnotation(Put.class).path(), method, obj);
+                    continue;
+                }
                 if (method.isAnnotationPresent(Delete.class)){
                     ServerEngine.getInstance().insertMethod("DELETE " + controllerPath + method.getAnnotation(Delete.class).path(), method, obj);
                     continue;
@@ -88,26 +91,40 @@ public class DependencyEngine {
         for (Class<?> cls : classes) {
             for (Field field : cls.getDeclaredFields()){
                 if (field.isAnnotationPresent(Autowired.class)){
-                    throw new FrameworkException("@Autowired annotation forbidden in @Component classes. Class: " + cls.getName() + " has @Autowired annotation in field: " + field.getName());
+                    throw new FrameworkException("Forbidden to use @Autowired in @Component classes. Class: " + cls.getName() + " has @Autowired annotation in field: " + field.getName());
                 }
             }
 
             Object obj = cls.getDeclaredConstructor().newInstance();
             componentMap.put(cls.getName(), obj);
         }
+    }
 
-        /// Injecting @Component classes into @Service classes
-        for (String serviceName : serviceMap.keySet()){
-            Object serviceObject = serviceMap.get(serviceName);
+    protected void injectDependencies() throws IllegalAccessException {
+        for (String controllerName : controllerMap.keySet()){
+            Object controllerObject = controllerMap.get(controllerName);
 
-            for (Field field : serviceObject.getClass().getDeclaredFields()){
-                if (field.isAnnotationPresent(Autowired.class)) {
-                    if (field.getType().isAnnotationPresent(Controller.class)){
-                        throw new FrameworkException("Classes with @Controller annotation cannot be injected into @Service classes with @Autowired. Class: " + serviceObject.getClass().getName() + " has @Autowired annotation in field: " + field.getName());
-                    }
-
+            /// injecting services into controller classes
+            for (Field field : controllerObject.getClass().getDeclaredFields()){
+                if (field.getType().isAnnotationPresent(Service.class)){
                     field.setAccessible(true);
-                    field.set(serviceObject, componentMap.get(field.getType().getName()));
+                    field.set(controllerObject, serviceMap.get(field.getType().getName()));
+                }
+            }
+
+            /// inserting components into service classes
+            for (String serviceName : serviceMap.keySet()){
+                Object serviceObject = serviceMap.get(serviceName);
+
+                for (Field field : serviceObject.getClass().getDeclaredFields()){
+                    if (field.isAnnotationPresent(Autowired.class)) {
+                        if (field.getType().isAnnotationPresent(Controller.class)){
+                            throw new FrameworkException("Classes with @Controller annotation cannot be injected into @Service classes with @Autowired. Class: " + serviceObject.getClass().getName() + " has @Autowired annotation in field: " + field.getName());
+                        }
+
+                        field.setAccessible(true);
+                        field.set(serviceObject, componentMap.get(field.getType().getName()));
+                    }
                 }
             }
         }

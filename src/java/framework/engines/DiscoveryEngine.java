@@ -110,5 +110,6 @@ public class DiscoveryEngine {
         DependencyEngine.getInstance().creteService(serviceClassesList);
         DependencyEngine.getInstance().creteController(controllerClassesList);
         DependencyEngine.getInstance().createComponents(componentClassesList);
+        DependencyEngine.getInstance().injectDependencies();
     }
 }
