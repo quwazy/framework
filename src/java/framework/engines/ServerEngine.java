@@ -119,7 +119,7 @@ public class ServerEngine {
 
                 method.setAccessible(true);
                 if (method.getParameterTypes().length == 1) {
-                    method.invoke(controllerMap.get(request.getPath()), DatabaseEngine.getInstance().createEntity(method.getParameterTypes()[0].getName(), request.getJsonBody()));
+                    method.invoke(controllerMap.get(request.getPath()), DatabaseEngine.getInstance().createEntity(method.getParameterTypes()[0].getName(), request.getJsonBody(), null));
                     return new SuccessfulResponse();
                 }
                 else {
@@ -128,9 +128,27 @@ public class ServerEngine {
             }
 
             case PUT -> {
+                Long id = Long.parseLong(request.getPath().split("\\?")[1].split("=")[1]);
+
+                request.setPath(request.getPath().split("\\?")[0]);
                 Method method = methodMap.get(request.getPath());
                 if (method == null) {
                     throw new FrameworkException("PUT method not found for path: " + request.getPath());
+                }
+
+                method.setAccessible(true);
+                if (method.getParameterTypes().length == 2){
+                    if (method.getParameterTypes()[0] == Long.class){
+                        method.invoke(controllerMap.get(request.getPath()), id, DatabaseEngine.getInstance().createEntity(method.getParameterTypes()[1].getName(), request.getJsonBody(), id));
+                    }
+                    else {
+                        method.invoke(controllerMap.get(request.getPath()), DatabaseEngine.getInstance().createEntity(method.getParameterTypes()[1].getName(), request.getJsonBody(), id), id);
+                    }
+
+                    return new SuccessfulResponse();
+                }
+                else {
+                    throw new FrameworkException("PUT method must have only two parameter");
                 }
             }
 

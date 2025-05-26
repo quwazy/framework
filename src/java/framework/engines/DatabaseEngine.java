@@ -155,6 +155,43 @@ public class DatabaseEngine {
         for (Class<?> cls : database.keySet()){
             List<Object> objectList = database.get(cls);
             objectList.forEach(System.out::println);
+            System.out.println("------------------------------------------");
+        }
+    }
+
+    /**
+     * Update old entity with new entity.
+     * @param repositoryName name of repository.
+     * @param entity to be put into the database.
+     * @param id of entity in the database table.
+     */
+    public void updateEntity(String repositoryName, Long id, Object entity) throws ClassNotFoundException, IllegalAccessException {
+        String entityName = repositoryToEntityMap.get(repositoryName);
+        if (entityName == null){
+            throw new FrameworkException("Repository: " + repositoryName + " is not working with Entity you provided");
+        }
+
+        Class<?> clazz = Class.forName(entityName);
+        Field field = null;
+
+        for (Field classField : clazz.getDeclaredFields()) {
+            classField.setAccessible(true);
+            if (classField.isAnnotationPresent(Id.class)) {
+                field = classField;
+                break;
+            }
+        }
+
+        if (field == null){
+            throw new FrameworkException("No Id field in entity: " + entityName);
+        }
+
+        for (Object obj : database.get(clazz)) {
+            if (field.get(obj) == id){
+                database.get(clazz).add(entity);
+                database.get(clazz).remove(obj);
+                break;
+            }
         }
     }
 
@@ -188,7 +225,7 @@ public class DatabaseEngine {
      * @param jsonMap from request.
      * @return Object to be inserted into a database.
      */
-    protected Object createEntity(String className, HashMap<String, String> jsonMap) throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
+    protected Object createEntity(String className, HashMap<String, String> jsonMap, Long id) throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
         Class<?> cls = Class.forName(className);
         if (!checkPostParams(cls, jsonMap)){
             throw new FrameworkException("JSON map does not match with given class: " + className);
@@ -209,6 +246,11 @@ public class DatabaseEngine {
                 else {
                     field.set(obj, null);
                 }
+            }
+            else if (field.isAnnotationPresent(Id.class) && id != null)
+            {
+                field.setAccessible(true);
+                field.set(obj, id);
             }
         }
 
@@ -236,7 +278,7 @@ public class DatabaseEngine {
                 counter--;
             }
         }
-        return counter == 0;
+        return counter <= 1;
     }
 
     /**

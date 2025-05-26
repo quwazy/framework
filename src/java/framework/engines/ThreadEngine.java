@@ -82,7 +82,7 @@ public class ThreadEngine implements Runnable {
             }
         } while (!line.trim().isEmpty());
 
-        if (method.equals(Method.POST)) {
+        if (method.equals(Method.POST) || method.equals(Method.PUT)) {
             int contentLength = Integer.parseInt(headers.get("content-length"));
             char[] buff = new char[contentLength];
             in.read(buff, 0, contentLength);

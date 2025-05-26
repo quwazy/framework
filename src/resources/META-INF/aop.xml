@@ -1,9 +1,10 @@
 <aspectj>
     <weaver>
-<!--        must put the aspect directory here-->
+        <!--must put the aspect directory here-->
         <include within="framework.aspects.*"/>
 
         <include within="playground.controllers.*"/>
+        <include within="playground.services.*"/>
         <include within="playground.components.Calculator"/>
         <include within="playground.Main"/>
     </weaver>

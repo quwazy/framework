@@ -7,7 +7,7 @@ import framework.http.responses.JsonResponse;
 import framework.http.responses.Response;
 import playground.entities.Article;
 import playground.repositories.ArticleRepository;
-import playground.service.ArticleService;
+import playground.services.ArticleService;
 
 @Controller( path = "/articles")
 public class ArticleController {

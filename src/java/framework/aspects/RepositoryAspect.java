@@ -1,6 +1,7 @@
 package framework.aspects;
 
 import framework.engines.DatabaseEngine;
+import framework.exceptions.FrameworkException;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -36,8 +37,17 @@ public class RepositoryAspect {
     }
 
     @Around("call (void playground.*.*.update(..))")
-    public void repositoryUpdateCall(ProceedingJoinPoint joinPoint) {
-        System.out.println("Update method called of: " + joinPoint.getSignature().getDeclaringTypeName() + " in class " + joinPoint.getThis().getClass().getName());
+    public void repositoryUpdateCall(ProceedingJoinPoint joinPoint) throws ClassNotFoundException, IllegalAccessException {
+        if (joinPoint.getArgs().length == 2 && joinPoint.getArgs()[0] != null && joinPoint.getArgs()[1] != null){
+            if (joinPoint.getArgs()[0] instanceof Long){
+                DatabaseEngine.getInstance().updateEntity(joinPoint.getSignature().getDeclaringTypeName(), (Long) joinPoint.getArgs()[0], joinPoint.getArgs()[1]);
+            }
+            else {
+                DatabaseEngine.getInstance().updateEntity(joinPoint.getSignature().getDeclaringTypeName(), (Long) joinPoint.getArgs()[1], joinPoint.getArgs()[0]);
+            }
+        } else {
+            throw new FrameworkException("Wrong arguments for update method");
+        }
     }
 
     @Around("call (void playground.*.*.delete(Long))")

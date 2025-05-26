@@ -4,11 +4,12 @@ import framework.annotations.components.Controller;
 import framework.annotations.methodes.Delete;
 import framework.annotations.methodes.Get;
 import framework.annotations.methodes.Post;
+import framework.annotations.methodes.Put;
 import framework.http.responses.JsonResponse;
 import framework.http.responses.Response;
 import playground.entities.Employee;
 import playground.repositories.EmployeeRepository;
-import playground.service.EmployeeService;
+import playground.services.EmployeeService;
 
 import java.util.List;
 
@@ -39,5 +40,10 @@ public class EmployeeController {
     @Delete(path = "/deleteEmployee")
     public void deleteEmployee(Long id){
         employeeRepository.delete(id);
+    }
+
+    @Put(path = "/changeEmployee")
+    public void changeEmployee(Long id, Employee employee){
+        employeeRepository.update(id, employee);
     }
 }
