@@ -175,6 +175,7 @@ public class DatabaseEngine {
 
                     if (fieldValue.equals(id)) {
                         database.get(clazz).remove(obj);
+                        return;
                     }
                 }
             }
