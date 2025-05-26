@@ -1,5 +1,8 @@
-package playground.old;
+package playground.components;
 
+import framework.annotations.components.Component;
+
+@Component
 public class Calculator {
     public int add(int a, int b) {
         return a + b;
@@ -8,5 +11,4 @@ public class Calculator {
     public int subtract(int a, int b) {
         return a - b;
     }
-
 }
