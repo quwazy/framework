@@ -1,6 +1,7 @@
 package framework.engines;
 
 import framework.annotations.components.Repository;
+import framework.annotations.databases.Entity;
 import framework.annotations.databases.Id;
 import framework.exceptions.FrameworkException;
 import framework.interfaces.FrameworkRepository;
@@ -70,55 +71,14 @@ public class DatabaseEngine {
     protected void mapRepositoryToEntity(List<Class<?>> classes) {
         for (Class<?> cls : classes) {
             if (FrameworkRepository.class.isAssignableFrom(cls) && cls.isAnnotationPresent(Repository.class)){
+                if (!cls.getAnnotation(Repository.class).entity().isAnnotationPresent(Entity.class)){
+                    throw new FrameworkException("Class name you provided in @Repository annotation: " + cls.getAnnotation(Repository.class).entity().getName() + " doesn't have @Entity annotation");
+                }
                 repositoryToEntityMap.put(cls.getName(), cls.getAnnotation(Repository.class).entity().getName());
             }
             else{
                 throw new FrameworkException("Class: " + cls.getName() + " with @Repository annotation does not implement FrameworkRepository interface.");
             }
-        }
-    }
-
-    /**
-     * Saving Object into the database
-     * @param repositoryName
-     * @param newEntity
-     */
-    public void insertEntity(String repositoryName, Object newEntity) throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
-        String entityName = repositoryToEntityMap.get(repositoryName);
-        if (entityName == null){
-            throw new FrameworkException("Repository: " + repositoryName + " is not working with Entity you provided");
-        }
-
-        Class<?> clazz = Class.forName(entityName);
-        Object obj = clazz.getDeclaredConstructor().newInstance();
-        Field[] fields = clazz.getDeclaredFields();
-        for (Field field : fields) {
-            field.setAccessible(true); // allow access to private fields
-
-            if (field.isAnnotationPresent(Id.class)) {
-                // Assign a new Long ID (you can generate this however you like)
-                Long generatedId = getNextId();
-                field.set(obj, generatedId);
-            } 
-            else {
-                // Copy value from original object
-                Field sourceField;
-                try {
-                    sourceField = newEntity.getClass().getDeclaredField(field.getName());
-                    sourceField.setAccessible(true);
-                    Object value = sourceField.get(newEntity);
-                    field.set(obj, value);
-                } catch (NoSuchFieldException e) {
-                    // Skip if field not found (optional)
-                }
-            }
-        }
-        
-        database.get(clazz).add(obj);
-        //TODO
-        for (Class<?> cls : database.keySet()){
-            List<Object> objectList = database.get(cls);
-            objectList.forEach(System.out::println);
         }
     }
 
@@ -157,31 +117,45 @@ public class DatabaseEngine {
     }
 
     /**
-     * For given JSON return Object
+     * Saving Object into the database.
+     * Chceks if provided entity can be inserted in the repository.
+     * @param repositoryName Repository name to insert the entity into the database.
+     * @param entity object to be inserted into a database.
      */
-    protected Object createEntity(String className, HashMap<String, String> jsonMap) throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
-        Class<?> cls = Class.forName(className);
-        if (!checkPostParams(cls, jsonMap)){
-            throw new FrameworkException("JSON map does not match with given class: " + className);
-        }
-        if (!database.containsKey(cls)){
-            throw new FrameworkException("Class: " + className + " does not have @Entity annotation");
+    public void insertEntity(String repositoryName, Object entity) throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
+        String entityName = repositoryToEntityMap.get(repositoryName);
+        if (entityName == null){
+            throw new FrameworkException("Repository: " + repositoryName + " is not working with Entity you provided");
         }
 
-        Object obj = cls.getDeclaredConstructor().newInstance();   //create a new object
+        Class<?> clazz = Class.forName(entityName);
+        Object obj = clazz.getDeclaredConstructor().newInstance();
 
-        for (Field field : cls.getDeclaredFields()) {
-            if (!field.isAnnotationPresent(Id.class)) {
-                field.setAccessible(true);
-                String value = jsonMap.get(field.getName());
-                if (value != null) {
-                    Object convertedValue = convertValue(field.getType(), value);
-                    field.set(obj, convertedValue);
+        for (Field field : clazz.getDeclaredFields()) {
+            field.setAccessible(true);
+
+            if (field.isAnnotationPresent(Id.class)) {
+                Long generatedId = getNextId();
+                field.set(obj, generatedId);
+            }
+            else {
+                Field sourceField;
+                try {
+                    sourceField = entity.getClass().getDeclaredField(field.getName());
+                    sourceField.setAccessible(true);
+                    field.set(obj, sourceField.get(entity));
+                } catch (NoSuchFieldException e) {
+                    throw new FrameworkException("No such filed in entity");
                 }
             }
         }
 
-        return obj;
+        database.get(clazz).add(obj);       //inserting into database
+        //TODO
+        for (Class<?> cls : database.keySet()){
+            List<Object> objectList = database.get(cls);
+            objectList.forEach(System.out::println);
+        }
     }
 
     /**
@@ -208,12 +182,50 @@ public class DatabaseEngine {
     }
 
     /**
-     * Da li se POST parametri poklapaju sa Entitetom u kontroller klasi
+     * Creating an entity object from JSON map.
+     * @param className Name of the entity class.
+     * @param jsonMap from request.
+     * @return Object to be inserted into a database.
+     */
+    protected Object createEntity(String className, HashMap<String, String> jsonMap) throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
+        Class<?> cls = Class.forName(className);
+        if (!checkPostParams(cls, jsonMap)){
+            throw new FrameworkException("JSON map does not match with given class: " + className);
+        }
+        if (!database.containsKey(cls)){
+            throw new FrameworkException("Class: " + className + " does not have @Entity annotation");
+        }
+
+        Object obj = cls.getDeclaredConstructor().newInstance();
+
+        for (Field field : cls.getDeclaredFields()) {
+            if (!field.isAnnotationPresent(Id.class)) {
+                field.setAccessible(true);
+                String value = jsonMap.get(field.getName());
+                if (value != null) {
+                    field.set(obj, convertValue(field.getType(), value));   //set object's field value
+                }
+                else {
+                    field.set(obj, null);
+                }
+            }
+        }
+
+        return obj;
+    }
+
+    /**
+     * Checks if the class's object we want to create and JSON map,
+     * have the same attributes.
+     * @param cls class name.
+     * @param jsonMap map from request.
+     * @return true if JSON map matches with class fields, false otherwise.
      */
     private boolean checkPostParams(Class<?> cls, HashMap<String, String> jsonMap) {
         if (jsonMap.size() != cls.getDeclaredFields().length - 1) {
             return false;
         }
+
         int counter = jsonMap.size();
         for (Field field : cls.getDeclaredFields()) {
             if (field.isAnnotationPresent(Id.class)) {

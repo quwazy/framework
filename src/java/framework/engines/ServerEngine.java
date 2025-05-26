@@ -53,7 +53,7 @@ public class ServerEngine {
             }
 
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new FrameworkException("Failed to create ServerSocket");
         }
     }
 
@@ -119,8 +119,7 @@ public class ServerEngine {
 
                 method.setAccessible(true);
                 if (method.getParameterTypes().length == 1) {
-                    Object obj = DatabaseEngine.getInstance().createEntity(method.getParameterTypes()[0].getName(), request.getJsonBody());
-                    method.invoke(controllerMap.get(request.getPath()), obj);
+                    method.invoke(controllerMap.get(request.getPath()), DatabaseEngine.getInstance().createEntity(method.getParameterTypes()[0].getName(), request.getJsonBody()));
                     return new SuccessfulResponse();
                 }
                 else {
