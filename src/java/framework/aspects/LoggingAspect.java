@@ -12,7 +12,7 @@ import org.aspectj.lang.annotation.Pointcut;
  */
 @Aspect
 public class LoggingAspect {
-    @Pointcut("execution(* playground.old.Calculator.*(..))")
+    @Pointcut("execution(* playground.components.Calculator.*(..))")
     public void calculatorMethods() {}
 
     @Before("calculatorMethods()")

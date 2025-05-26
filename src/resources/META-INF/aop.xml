@@ -4,6 +4,7 @@
         <include within="framework.aspects.*"/>
 
         <include within="playground.controllers.*"/>
+        <include within="playground.components.Calculator"/>
         <include within="playground.Main"/>
     </weaver>
     <aspects>
