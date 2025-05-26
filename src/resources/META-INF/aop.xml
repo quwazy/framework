@@ -1,18 +1,14 @@
 <aspectj>
     <weaver>
-        <include within="framework.server.*"/>
+<!--        must put the aspect directory here-->
         <include within="framework.aspects.*"/>
-        <include within="framework.interfaces.FrameworkRepository"/>
-        <include within="framework.annotations.components.Repository"/>
+
         <include within="playground.controllers.*"/>
-        <include within="playground.controllers.EmployeeController"/>
-        <include within="playground.repositories.*"/>
-        <include within="playground.repositories.EmployeeRepository"/>
         <include within="playground.Main"/>
     </weaver>
     <aspects>
         <aspect name="framework.aspects.LoggingAspect"/>
-        <aspect name="framework.aspects.RunAspect"/>
         <aspect name="framework.aspects.RepositoryAspect"/>
+        <aspect name="framework.aspects.RunAspect"/>
     </aspects>
 </aspectj>
